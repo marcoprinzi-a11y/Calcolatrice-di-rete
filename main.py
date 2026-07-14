@@ -1,7 +1,7 @@
 import abc
 import re
 from typing import Dict, Any, Tuple, List
-"classe base astratta"
+"classe base astratta (modello di base)"
 class NetworkObject(abc.ABC):
     CIDR_PATTERN = re.compile(r"^([0-9a-fA-F\.\:]+)/(\d+)$")
 "costruttore classe"
