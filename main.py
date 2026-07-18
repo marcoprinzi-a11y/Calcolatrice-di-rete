@@ -30,3 +30,19 @@ def __init__(self, raw_input: str):
         pass
 
 
+class IPv4Network(NetworkObject):
+    """
+    Rappresenta una rete IPv4. Specializza i calcoli matematici su 32 bit.
+    """
+
+    def __init__(self, raw_input: str):
+        # Uso corretto di super() per delegare la validazione iniziale alla classe base
+        super().__init__(raw_input)
+
+        if not 0 <= self.prefix_len <= 32:
+            raise ValueError("Prefisso IPv4 non valido (deve essere compreso tra 0 e 32).")
+
+        self.ip_int = self._ip_to_int(self.ip_str)
+        self.mask_int = (0xFFFFFFFF << (32 - self.prefix_len)) & 0xFFFFFFFF
+        self.network_int = self.ip_int & self.mask_int
+        self.broadcast_int = self.network_int | (~self.mask_int & 0xFFFFFFFF)
