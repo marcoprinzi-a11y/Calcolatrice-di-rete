@@ -95,7 +95,7 @@ class IPv4Network(NetworkObject):
             }
 
         def _is_private(self) -> bool:
-            """Verifica se l'IP appartiene alle classi private RFC 1918."""
+            "Verifica se l'IP appartiene alle classi private RFC 1918."
             # 10.0.0.0/8
             if (self.network_int & 0xFF000000) == 0x0A000000:
                 return True
@@ -106,3 +106,18 @@ class IPv4Network(NetworkObject):
             if (self.network_int & 0xFFFF0000) == 0xC0A80000:
                 return True
             return False
+
+        class IPv6Network(NetworkObject):
+            """
+            Rappresenta una rete IPv6. Specializza i calcoli su 128 bit.
+            """
+
+            def __init__(self, raw_input: str):
+                super().__init__(raw_input)
+                if not 0 <= self.prefix_len <= 128:
+                    raise ValueError("Prefisso IPv6 non valido (deve essere compreso tra 0 e 128).")
+
+                self.ip_int = self._ip_to_int(self.ip_str)
+                self.mask_int = (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF << (
+                            128 - self.prefix_len)) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                self.network_int = self.ip_int & self.mask_int
