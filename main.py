@@ -14,3 +14,19 @@ def create_network_object(cidr_input: str) -> NetworkObject:
         return IPv6Network(cidr_input)
     else:
         return IPv4Network(cidr_input)
+
+def print_pretty_summary(summary: dict):
+    """Formatta e stampa a video i risultati dell'analisi."""
+    print("\n" + "="*45)
+    print(f" RISULTATI ANALISI RETE ({summary['Protocollo']}) ")
+    print("="*45)
+    for key, value in summary.items():
+        if key == "Protocollo":
+            continue
+        # Formatta i numeri grandi in modo leggibile
+        if isinstance(value, int):
+            value = f"{value:,}".replace(",", ".")
+        print(f"{key:<22}: {value}")
+    print("="*45 + "\n")
+
+
