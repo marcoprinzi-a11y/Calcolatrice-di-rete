@@ -30,3 +30,47 @@ def print_pretty_summary(summary: dict):
     print("="*45 + "\n")
 
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="SubnetCalc-X: Calcolatrice di Rete Didattica per Esame Finale."
+    )
+    parser.add_argument(
+        "cidr",
+        type=str,
+        help="L'indirizzo di rete in formato CIDR (es: 192.168.10.1/24 o fc00::/64)"
+    )
+    parser.add_argument(
+        "-o", "--output",
+        type=str,
+        choices=["text", "json"],
+        default="text",
+        help="Scegli il formato di output (predefinito: text)"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        # Polimorfismo in azione:
+        # 1. Creiamo l'oggetto senza sapere quale classe concreta stiamo usando
+        network: NetworkObject = create_network_object(args.cidr)
+
+        # 2. Invochiamo il metodo polimorfico 'get_network_summary()'
+        # Il main non sa se sta parlando con un'istanza IPv4 o IPv6, sa solo che espone questo metodo.
+        summary_data = network.get_network_summary()
+
+        if args.output == "json":
+            print(json.dumps(summary_data, indent=4))
+        else:
+            print_pretty_summary(summary_data)
+
+    except ValueError as e:
+        print(f"Errore di Validazione: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Errore Inaspettato: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+
