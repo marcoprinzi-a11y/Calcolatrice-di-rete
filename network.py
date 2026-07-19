@@ -121,3 +121,67 @@ class IPv4Network(NetworkObject):
                 self.mask_int = (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF << (
                             128 - self.prefix_len)) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
                 self.network_int = self.ip_int & self.mask_int
+
+                def _ip_to_int(self, ip_str: str) -> int:
+                    """Converte un indirizzo IPv6 (inclusi formati contratti '::') in intero a 128 bit."""
+                    # Gestione rudimentale ma efficace dell'espansione del doppio due punti ::
+                    if "::" in ip_str:
+                        parts_split = ip_str.split("::")
+                        left = parts_split[0].split(":") if parts_split[0] else []
+                        right = parts_split[1].split(":") if parts_split[1] else []
+                        missing = 8 - (len(left) + len(right))
+                        blocks = left + ["0"] * missing + right
+                    else:
+                        blocks = ip_str.split(":")
+
+                    if len(blocks) != 8:
+                        raise ValueError(f"Indirizzo IPv6 non valido: {ip_str}")
+
+                    try:
+                        val = 0
+                        for block in blocks:
+                            val = (val << 16) + int(block, 16)
+                        return val
+                    except ValueError:
+                        raise ValueError(f"Esadecimali IPv6 non validi in: {ip_str}")
+
+                def _int_to_ip(self, ip_int: int) -> str:
+                    """Converte un intero a 128 bit in formato IPv6 standard."""
+                    blocks = []
+                    for i in range(8):
+                        blocks.append(f"{(ip_int >> (112 - i * 16)) & 0xFFFF:x}")
+                    # Restituisce l'indirizzo IPv6 non compresso per massima compatibilità didattica
+                    return ":".join(blocks)
+
+                def get_host_range(self) -> Tuple[str, str]:
+                    """Calcola l'intervallo di host IPv6 (il primo indirizzo è la rete stessa, l'ultimo è la fine del segmento)."""
+                    first_host = self.network_int + 1
+                    last_host = self.network_int + (2 ** (128 - self.prefix_len)) - 1
+                    return self._int_to_ip(first_host), self._int_to_ip(last_host)
+
+                def get_network_summary(self) -> Dict[str, Any]:
+                    """Implementazione dell'override polimorfico per IPv6."""
+                    first_host, last_host = self.get_host_range()
+                    total_hosts = 2 ** (128 - self.prefix_len)
+
+                    return {
+                        "Protocollo": "IPv6",
+                        "Indirizzo Base": self.ip_str,
+                        "Prefisso CIDR": f"/{self.prefix_len}",
+                        "Indirizzo Rete": self._int_to_ip(self.network_int),
+                        "Range Host": f"{first_host} - {last_host}",
+                        "Host Totali": total_hosts,
+                        "Host Utilizzabili": total_hosts,
+                        # In IPv6 non si escludono tipicamente il primo/ultimo nei calcoli globali
+                        "Privato/Locale": self._is_local()
+                    }
+
+                def _is_local(self) -> bool:
+                    """Controlla se l'indirizzo è Unique Local Unicast (fc00::/7) o Link-Local (fe80::/10)."""
+                    # fc00::/7 (da fc00... a fdff...)
+                    if (self.network_int >> 121) == 0x7E:
+                        return True
+                    # fe80::/10
+                    if (self.network_int >> 118) == 0x3FA:
+                        return True
+                    return False
