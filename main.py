@@ -2,7 +2,7 @@ import sys
 import argparse
 import json
 from typing import List
-from network_models import NetworkObject, IPv4Network, IPv6Network
+from network import NetworkObject, IPv4Network, IPv6Network
 
 def create_network_object(cidr_input: str) -> NetworkObject:
     """
