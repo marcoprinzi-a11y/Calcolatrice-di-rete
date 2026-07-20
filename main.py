@@ -16,7 +16,7 @@ def create_network_object(cidr_input: str) -> NetworkObject:
         return IPv4Network(cidr_input)
 
 def print_pretty_summary(summary: dict):
-    """Formatta e stampa a video i risultati dell'analisi."""
+    "Formatta e stampa a video i risultati dell'analisi."
     print("\n" + "="*45)
     print(f" RISULTATI ANALISI RETE ({summary['Protocollo']}) ")
     print("="*45)
