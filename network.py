@@ -106,8 +106,7 @@ class IPv4Network(NetworkObject):
             if (self.network_int & 0xFFFF0000) == 0xC0A80000:
                 return True
             return False
-
-        class IPv6Network(NetworkObject):
+class IPv6Network(NetworkObject):
             """
             Rappresenta una rete IPv6. Specializza i calcoli su 128 bit.
             """
